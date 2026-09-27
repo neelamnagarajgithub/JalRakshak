@@ -55,6 +55,8 @@ https://github.com/user-attachments/assets/9a5fe357-4b89-47f8-b491-b0413fffe8ec
 
 ## Architecture
 
+![JalRakshak System Architecture](docs/jalrakshak-architecture.png)
+
 JalRakshak is organized into five main layers:
 
 1. **Frontend:** React dashboard used to view stations, measurements, and alerts.
