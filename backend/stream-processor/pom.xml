@@ -11,50 +11,216 @@
     <packaging>jar</packaging>
 
     <name>jalrakshak-stream-processor</name>
-    <description>Stream processing service for JalRakshak</description>
+    <description>Apache Flink stream-processing job for JalRakshak: consumes
+        river.measurements.v1, evaluates alert rules over event-time windows
+        and per-station state, and publishes river.alerts.v1.
+
+        This module is a PLAIN Flink application (no Spring Boot). The
+        previous scaffold declared @SpringBootApplication and spring-kafka
+        dependencies with no Spring Boot BOM/version management, and no
+        actual Flink dependency at all -- it did not compile as a Flink job
+        and mixed a Spring lifecycle with what should be a
+        StreamExecutionEnvironment submitted via `flink run`. This has been
+        replaced with a standard Flink job packaged as a shaded/fat jar with
+        a Main-Class manifest, which is how Flink jobs are normally built
+        and submitted.
+    </description>
 
     <properties>
         <java.version>21</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Flink 1.19.x is the newest line with documented (if still
+             maturing) Java 17/21 runtime support at the time this module was
+             written; see docs/architecture.md "Flink and Java 21" for the
+             compatibility caveat this choice depends on. -->
+        <flink.version>1.19.1</flink.version>
+        <kafka-clients.version>3.6.1</kafka-clients.version>
+        <lombok.version>1.18.30</lombok.version>
+        <junit.version>5.10.2</junit.version>
+        <slf4j.version>2.0.13</slf4j.version>
+        <log4j.version>2.23.1</log4j.version>
     </properties>
 
     <dependencies>
-        <!-- Shared module -->
+        <!-- Shared event DTOs + Jackson ObjectMapper factory -->
         <dependency>
             <groupId>org.jalrakshak</groupId>
             <artifactId>shared</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
+        <!-- Flink core -->
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-streaming-java</artifactId>
+            <version>${flink.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-clients</artifactId>
+            <version>${flink.version}</version>
+        </dependency>
+
+        <!-- Flink Kafka connector -->
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-connector-kafka</artifactId>
+            <version>3.2.0-1.19</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>${kafka-clients.version}</version>
+        </dependency>
+
+        <!-- Base watermark strategies etc. -->
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-connector-base</artifactId>
+            <version>${flink.version}</version>
+        </dependency>
+
+        <!-- Logging (Flink expects an slf4j binding on the classpath at runtime) -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j2-impl</artifactId>
+            <version>${log4j.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
             <optional>true</optional>
         </dependency>
 
-        <!-- Spring for Apache Kafka -->
+        <!-- Test -->
         <dependency>
-            <groupId>org.springframework.kafka</groupId>
-            <artifactId>spring-kafka</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
         </dependency>
-
-        <!-- Apache Kafka Clients -->
         <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-clients</artifactId>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-test-utils</artifactId>
+            <version>${flink.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-streaming-java</artifactId>
+            <version>${flink.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.17.0</version>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
-            <!-- Compiler Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+            </plugin>
+
+            <!-- Flink jobs are submitted as a single fat jar -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>org.jalrakshak.streamprocessor.StreamProcessorJob</mainClass>
+                                    <!--
+                                        Flink 1.19's Kryo fallback serializer (via Twitter Chill's
+                                        ArraysAsListSerializer, registered unconditionally whenever any
+                                        type falls back to Kryo, e.g. AlertCandidate's Map of String to
+                                        Object evidence field) reflects into JDK-internal collection
+                                        classes. On Java 17+/21 the module system blocks that reflection by
+                                        default (InaccessibleObjectException: module java.base does not
+                                        "opens java.util" to unnamed module), which crashes the job the
+                                        moment any record is copied between chained operators.
+
+                                        The JDK's `java -jar` launcher honors Add-Opens/Add-Exports
+                                        manifest attributes (equivalent to the add-opens/add-exports JVM
+                                        flags) for exactly this case, so `java -jar
+                                        stream-processor-*.jar` works standalone with no extra flags. This
+                                        list mirrors Flink's own documented Java 17/21 JVM option set,
+                                        normally applied automatically by bin/flink and
+                                        start-cluster.sh via flink-conf.yaml's env.java.opts.all, which a
+                                        bare `java -jar` invocation bypasses.
+                                    -->
+                                    <manifestEntries>
+                                        <Add-Opens>java.base/java.util java.base/java.io java.base/java.lang java.base/java.lang.invoke java.base/java.net java.base/java.nio java.base/java.security java.base/java.text java.base/java.time java.base/java.util.concurrent java.base/java.util.concurrent.atomic java.base/sun.nio.ch java.base/sun.nio.cs java.base/sun.security.action java.base/sun.util.calendar</Add-Opens>
+                                        <Add-Exports>java.base/sun.net.util java.base/sun.reflect.generics.reflectiveObjects java.management/com.sun.jmx.mbeanserver</Add-Exports>
+                                    </manifestEntries>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

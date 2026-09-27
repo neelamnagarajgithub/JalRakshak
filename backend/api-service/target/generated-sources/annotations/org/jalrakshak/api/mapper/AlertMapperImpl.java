@@ -2,16 +2,18 @@ package org.jalrakshak.api.mapper;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
 import javax.annotation.processing.Generated;
 import org.jalrakshak.api.domain.Alert;
 import org.jalrakshak.api.domain.AlertSeverity;
 import org.jalrakshak.api.domain.AlertStatus;
+import org.jalrakshak.api.domain.Station;
 import org.jalrakshak.api.dto.AlertDto;
 import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-09-26T04:55:15+0530",
+    date = "2026-09-27T22:34:52+0530",
     comments = "version: 1.5.5.Final, compiler: javac, environment: Java 21.0.9 (Red Hat, Inc.)"
 )
 @Component
@@ -25,6 +27,7 @@ public class AlertMapperImpl implements AlertMapper {
 
         AlertDto.AlertDtoBuilder alertDto = AlertDto.builder();
 
+        alertDto.stationId( alertStationId( alert ) );
         alertDto.id( alert.getId() );
         alertDto.ruleCode( alert.getRuleCode() );
         if ( alert.getSeverity() != null ) {
@@ -42,6 +45,8 @@ public class AlertMapperImpl implements AlertMapper {
         alertDto.triggeredAt( alert.getTriggeredAt() );
         alertDto.acknowledgedAt( alert.getAcknowledgedAt() );
         alertDto.resolvedAt( alert.getResolvedAt() );
+        alertDto.lastOccurredAt( alert.getLastOccurredAt() );
+        alertDto.repeatCount( alert.getRepeatCount() );
 
         return alertDto.build();
     }
@@ -71,7 +76,24 @@ public class AlertMapperImpl implements AlertMapper {
         alert.triggeredAt( alertDto.getTriggeredAt() );
         alert.acknowledgedAt( alertDto.getAcknowledgedAt() );
         alert.resolvedAt( alertDto.getResolvedAt() );
+        alert.lastOccurredAt( alertDto.getLastOccurredAt() );
+        alert.repeatCount( alertDto.getRepeatCount() );
 
         return alert.build();
+    }
+
+    private UUID alertStationId(Alert alert) {
+        if ( alert == null ) {
+            return null;
+        }
+        Station station = alert.getStation();
+        if ( station == null ) {
+            return null;
+        }
+        UUID id = station.getId();
+        if ( id == null ) {
+            return null;
+        }
+        return id;
     }
 }

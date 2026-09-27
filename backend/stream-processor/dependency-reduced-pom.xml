@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.jalrakshak</groupId>
+  <artifactId>stream-processor</artifactId>
+  <name>jalrakshak-stream-processor</name>
+  <version>0.0.1-SNAPSHOT</version>
+  <description>Apache Flink stream-processing job for JalRakshak: consumes
+        river.measurements.v1, evaluates alert rules over event-time windows
+        and per-station state, and publishes river.alerts.v1.
+
+        This module is a PLAIN Flink application (no Spring Boot). The
+        previous scaffold declared @SpringBootApplication and spring-kafka
+        dependencies with no Spring Boot BOM/version management, and no
+        actual Flink dependency at all -- it did not compile as a Flink job
+        and mixed a Spring lifecycle with what should be a
+        StreamExecutionEnvironment submitted via `flink run`. This has been
+        replaced with a standard Flink job packaged as a shaded/fat jar with
+        a Main-Class manifest, which is how Flink jobs are normally built
+        and submitted.</description>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+        <configuration>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <version>${lombok.version}</version>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.2.5</version>
+      </plugin>
+      <plugin>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.5.1</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+              <transformers>
+                <transformer>
+                  <mainClass>org.jalrakshak.streamprocessor.StreamProcessorJob</mainClass>
+                  <manifestEntries>
+                    <Add-Opens>java.base/java.util java.base/java.io java.base/java.lang java.base/java.lang.invoke java.base/java.net java.base/java.nio java.base/java.security java.base/java.text java.base/java.time java.base/java.util.concurrent java.base/java.util.concurrent.atomic java.base/sun.nio.ch java.base/sun.nio.cs java.base/sun.security.action java.base/sun.util.calendar</Add-Opens>
+                    <Add-Exports>java.base/sun.net.util java.base/sun.reflect.generics.reflectiveObjects java.management/com.sun.jmx.mbeanserver</Add-Exports>
+                  </manifestEntries>
+                </transformer>
+                <transformer />
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  <dependencies>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>5.10.2</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>junit-jupiter-api</artifactId>
+          <groupId>org.junit.jupiter</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>junit-jupiter-params</artifactId>
+          <groupId>org.junit.jupiter</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>junit-jupiter-engine</artifactId>
+          <groupId>org.junit.jupiter</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.flink</groupId>
+      <artifactId>flink-test-utils</artifactId>
+      <version>1.19.1</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>flink-table-common</artifactId>
+          <groupId>org.apache.flink</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>flink-test-utils-junit</artifactId>
+          <groupId>org.apache.flink</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>flink-runtime</artifactId>
+          <groupId>org.apache.flink</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>flink-core</artifactId>
+          <groupId>org.apache.flink</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>flink-rpc-akka-loader</artifactId>
+          <groupId>org.apache.flink</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>assertj-core</artifactId>
+          <groupId>org.assertj</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>flink-statebackend-rocksdb</artifactId>
+          <groupId>org.apache.flink</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>flink-statebackend-changelog</artifactId>
+          <groupId>org.apache.flink</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>flink-dstl-dfs</artifactId>
+          <groupId>org.apache.flink</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>curator-test</artifactId>
+          <groupId>org.apache.curator</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.flink</groupId>
+      <artifactId>flink-streaming-java</artifactId>
+      <version>1.19.1</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <properties>
+    <java.version>21</java.version>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <flink.version>1.19.1</flink.version>
+    <lombok.version>1.18.30</lombok.version>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+    <slf4j.version>2.0.13</slf4j.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <kafka-clients.version>3.6.1</kafka-clients.version>
+    <log4j.version>2.23.1</log4j.version>
+    <junit.version>5.10.2</junit.version>
+  </properties>
+</project>

@@ -17,4 +17,8 @@ public interface MeasurementRepository extends JpaRepository<Measurement, UUID> 
     boolean existsByEventId(String eventId);
 
     List<Measurement> findByStationIdOrderByObservedAtDesc(UUID stationId);
+
+    List<Measurement> findTop50ByStationIdOrderByObservedAtDesc(UUID stationId);
+
+    List<Measurement> findTop100ByOrderByObservedAtDesc();
 }

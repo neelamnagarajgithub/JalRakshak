@@ -25,7 +25,7 @@ public class SimulatorController {
     }
 
     @PostMapping("/scenarios/{name}")
-    public ResponseEntity<String> startScenario(@PathVariable String name) {
+    public ResponseEntity<String> startScenario(@PathVariable("name") String name) {
         switch (name.toLowerCase()) {
             case "normal":
                 generateNormalReadings();
@@ -79,10 +79,11 @@ public class SimulatorController {
 
         Station station = stations.get(0);
         double baseLevel = 2.0;
+        String runId = String.valueOf(System.currentTimeMillis());
 
         for (int i = 0; i < 10; i++) {
             MeasurementDto measurement = MeasurementDto.builder()
-                    .eventId("evt-rising-" + station.getId() + "-" + i)
+                    .eventId("evt-rising-" + station.getId() + "-" + i + "-" + runId)
                     .stationId(station.getId())
                     .observedAt(Instant.now().minusSeconds((9-i)*10)) // Spread over 90 seconds
                     .waterLevelM(baseLevel + i * 0.5) // Rising by 0.5m each step
@@ -103,10 +104,11 @@ public class SimulatorController {
         if (stations.isEmpty()) return;
 
         Station station = stations.get(0);
+        String runId = String.valueOf(System.currentTimeMillis());
 
         for (int i = 0; i < 5; i++) {
             MeasurementDto measurement = MeasurementDto.builder()
-                    .eventId("evt-rain-" + station.getId() + "-" + i)
+                    .eventId("evt-rain-" + station.getId() + "-" + i + "-" + runId)
                     .stationId(station.getId())
                     .observedAt(Instant.now().minusSeconds((4-i)*15))
                     .waterLevelM(2.5)
@@ -127,10 +129,11 @@ public class SimulatorController {
         if (stations.isEmpty()) return;
 
         Station station = stations.get(0);
+        String runId = String.valueOf(System.currentTimeMillis());
 
         // Normal reading
         MeasurementDto normal = MeasurementDto.builder()
-                .eventId("evt-spike-normal-" + station.getId())
+                .eventId("evt-spike-normal-" + station.getId() + "-" + runId)
                 .stationId(station.getId())
                 .observedAt(Instant.now())
                 .waterLevelM(2.0)
@@ -141,7 +144,7 @@ public class SimulatorController {
 
         // Spike reading
         MeasurementDto spike = MeasurementDto.builder()
-                .eventId("evt-spike-" + station.getId())
+                .eventId("evt-spike-" + station.getId() + "-" + runId)
                 .stationId(station.getId())
                 .observedAt(Instant.now())
                 .waterLevelM(5.0) // Sudden spike
@@ -173,7 +176,8 @@ public class SimulatorController {
         if (stations.isEmpty()) return;
 
         Station station = stations.get(0);
-        String eventId = "evt-duplicate-" + station.getId();
+        String runId = String.valueOf(System.currentTimeMillis());
+        String eventId = "evt-duplicate-" + station.getId() + "-" + runId;
 
         MeasurementDto measurement = MeasurementDto.builder()
                 .eventId(eventId)
@@ -199,10 +203,11 @@ public class SimulatorController {
         if (stations.isEmpty()) return;
 
         Station station = stations.get(0);
+        String runId = String.valueOf(System.currentTimeMillis());
 
         // Send a measurement with an old timestamp (delayed)
         MeasurementDto measurement = MeasurementDto.builder()
-                .eventId("evt-delayed-" + station.getId())
+                .eventId("evt-delayed-" + station.getId() + "-" + runId)
                 .stationId(station.getId())
                 .observedAt(Instant.now().minusSeconds(300)) // 5 minutes ago
                 .waterLevelM(2.2)

@@ -14,15 +14,34 @@
    cd jalrakshak/infra
    docker-compose up -d
    ```
-3. Wait for PostgreSQL and Kafka to be healthy
+3. Wait for PostgreSQL and Kafka to be healthy (single-node KRaft broker; there is no separate Zookeeper container)
 
 ## Demo Steps
 
 ### 1. Start the API Service
 ```bash
-cd jalrakshak/backend/api-service
+cd jalrakshak/backend
+mvn -pl shared,api-service -am install -DskipTests
+cd api-service
 mvn spring-boot:run
 ```
+
+### 1b. Start the Stream Processor (separate terminal)
+```bash
+cd jalrakshak/backend
+mvn -pl stream-processor -am package -DskipTests
+java -jar stream-processor/target/stream-processor-0.0.1-SNAPSHOT.jar
+```
+Alerts will only be produced/persisted if this is running alongside the API service.
+
+### 1c. Start the Frontend (separate terminal)
+```bash
+cd jalrakshak/frontend
+npm install
+npm run dev
+```
+Open http://localhost:3000.
+
 
 ### 2. Register Test Stations
 ```bash

@@ -1,0 +1,5 @@
+org/jalrakshak/shared/json/EventObjectMapper.class
+org/jalrakshak/shared/AlertEvent$AlertEventBuilder.class
+org/jalrakshak/shared/MeasurementEvent$MeasurementEventBuilder.class
+org/jalrakshak/shared/MeasurementEvent.class
+org/jalrakshak/shared/AlertEvent.class

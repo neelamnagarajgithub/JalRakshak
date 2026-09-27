@@ -51,4 +51,12 @@ public class Alert {
 
     private Instant acknowledgedAt;
     private Instant resolvedAt;
+
+    /** When this station+rule condition was last observed re-triggering (event-time). */
+    private Instant lastOccurredAt;
+
+    /** How many times this condition has (re-)triggered while tracked/suppressed. Starts at 1. */
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer repeatCount = 1;
 }

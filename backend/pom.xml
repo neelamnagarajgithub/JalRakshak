@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.jalrakshak</groupId>
+    <artifactId>jalrakshak-backend</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>jalrakshak-backend-reactor</name>
+    <description>
+        Aggregator/reactor POM so `mvn install` (or `mvn -pl module -am ...`)
+        can build the three backend modules in one command, in the correct
+        dependency order (shared must install before api-service and
+        stream-processor, since they depend on it by groupId/artifactId/version
+        rather than a Maven parent/relativePath relationship). This POM was
+        previously missing; each module built independently and required
+        `shared` to be `mvn install`-ed by hand first. This aggregator does not
+        change any module's own POM, dependencies, or packaging.
+    </description>
+
+    <modules>
+        <module>shared</module>
+        <module>api-service</module>
+        <module>stream-processor</module>
+    </modules>
+</project>

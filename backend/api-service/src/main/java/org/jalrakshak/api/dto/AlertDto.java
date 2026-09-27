@@ -23,4 +23,6 @@ public class AlertDto {
     private Instant triggeredAt;
     private Instant acknowledgedAt;
     private Instant resolvedAt;
+    private Instant lastOccurredAt;
+    private Integer repeatCount;
 }

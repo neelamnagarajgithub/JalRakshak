@@ -1,0 +1,6 @@
+org/jalrakshak/streamprocessor/functions/AlertSuppressionFunctionTest.class
+org/jalrakshak/streamprocessor/rules/SpikeRuleEngineTest.class
+org/jalrakshak/streamprocessor/serde/MeasurementEventDeserializerTest.class
+org/jalrakshak/streamprocessor/rules/RisingLevelRuleEngineTest.class
+org/jalrakshak/streamprocessor/rules/ThresholdRulesTest.class
+org/jalrakshak/streamprocessor/serde/MeasurementEventDeserializerTest$RecordingCollector.class

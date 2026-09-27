@@ -24,7 +24,7 @@ public class AlertController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<AlertDto> getAlertById(@PathVariable String id) {
+    public ResponseEntity<AlertDto> getAlertById(@PathVariable("id") String id) {
         try {
             return alertService.getAlertDtoById(UUID.fromString(id))
                     .map(ResponseEntity::ok)
@@ -35,12 +35,12 @@ public class AlertController {
     }
 
     @GetMapping("/station/{stationId}")
-    public List<AlertDto> getAlertsByStation(@PathVariable String stationId) {
+    public List<AlertDto> getAlertsByStation(@PathVariable("stationId") String stationId) {
         return alertService.getAlertsByStationId(UUID.fromString(stationId));
     }
 
     @PostMapping("/{id}/acknowledge")
-    public ResponseEntity<AlertDto> acknowledgeAlert(@PathVariable String id) {
+    public ResponseEntity<AlertDto> acknowledgeAlert(@PathVariable("id") String id) {
         try {
             AlertDto acknowledgedAlert = alertService.acknowledgeAlert(UUID.fromString(id));
             return ResponseEntity.ok(acknowledgedAlert);
@@ -50,7 +50,7 @@ public class AlertController {
     }
 
     @PostMapping("/{id}/resolve")
-    public ResponseEntity<AlertDto> resolveAlert(@PathVariable String id, @RequestParam(required = false) String note) {
+    public ResponseEntity<AlertDto> resolveAlert(@PathVariable("id") String id, @RequestParam(name = "note", required = false) String note) {
         try {
             AlertDto resolvedAlert = alertService.resolveAlert(UUID.fromString(id), note);
             return ResponseEntity.ok(resolvedAlert);

@@ -1,5 +1,6 @@
 package org.jalrakshak.api.controller;
 
+import jakarta.validation.Valid;
 import org.jalrakshak.api.domain.Station;
 import org.jalrakshak.api.dto.StationDto;
 import org.jalrakshak.api.mapper.StationMapper;
@@ -30,14 +31,14 @@ public class StationController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<StationDto> getStationById(@PathVariable String id) {
+    public ResponseEntity<StationDto> getStationById(@PathVariable("id") String id) {
         return stationService.getStationById(java.util.UUID.fromString(id))
                 .map(station -> ResponseEntity.ok(stationMapper.toDto(station)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public ResponseEntity<StationDto> createStation(@RequestBody StationDto stationDto) {
+    public ResponseEntity<StationDto> createStation(@Valid @RequestBody StationDto stationDto) {
         Station station = stationMapper.toEntity(stationDto);
         Station savedStation = stationService.createStation(station);
         return ResponseEntity.ok(stationMapper.toDto(savedStation));

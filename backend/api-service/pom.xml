@@ -33,6 +33,16 @@
     </dependencyManagement>
 
     <dependencies>
+        <!-- JalRakshak shared Kafka event DTOs (MeasurementEvent, AlertEvent).
+             The API publishes MeasurementEvent (not the JPA entity) and
+             consumes AlertEvent to persist alerts produced by the
+             stream-processor. -->
+        <dependency>
+            <groupId>org.jalrakshak</groupId>
+            <artifactId>shared</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
         <!-- Spring Boot Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -50,6 +60,13 @@
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
+        </dependency>
+
+        <!-- Flyway (versioned schema migrations; version managed by the
+             spring-boot-dependencies BOM imported above) -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
         </dependency>
 
         <!-- Spring Boot Validation -->
