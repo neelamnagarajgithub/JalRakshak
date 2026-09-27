@@ -5,7 +5,6 @@ JalRakshak is an event-driven river-monitoring prototype that ingests water-leve
 
 The project demonstrates how a backend API, Apache Kafka, Apache Flink, PostgreSQL, and a React dashboard can work together in a streaming data pipeline.
 
-JalRakshak currently uses simulated data and illustrative thresholds. It has not been validated for operational flood forecasting or public-safety decisions. Do not use it to make emergency or public-safety decisions.
 
 
 ---
@@ -600,7 +599,7 @@ The project includes tests covering:
 - Rule boundary and warm-up cases.
 - Kafka deserializer handling of malformed records.
 
-The project’s previous development environment did not have outbound network access, Maven, or a JDK compiler available, so the code was initially written and reviewed by hand. Subsequent local work successfully built the `shared` and `stream-processor` modules, but the complete end-to-end application has not yet been independently verified. See [Verified vs. Not Yet Verified](#verified-vs-not-yet-verified).
+
 
 ---
 
@@ -617,5 +616,5 @@ Additional project documentation:
 ---
 
 ## License
-
+JalRakshak currently uses simulated data and illustrative thresholds. It has not been validated for operational flood forecasting or public-safety decisions. Do not use it to make emergency or public-safety decisions.
 Educational and demonstration purposes only.
